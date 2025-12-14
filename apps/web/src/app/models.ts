@@ -32,6 +32,7 @@ export const MODEL_ANIMATIONS: Record<string, string[]> = {
   'Goleling Evolved.glb': [],
   'Green Blob.glb': [],
   'Green Spiky Blob.glb': [],
+  // 'Haunter.glb': [],
   'Hywirl.glb': [],
   'Monkroose.glb': [],
   'Mushnub.glb': [],

@@ -69,7 +69,7 @@ export class Creature {
       }
 
       // Set initial position to center (for hologram display)
-      this.currentPosition.set(0, 0, 0)
+      this.currentPosition.set(0, -1, 0)
       this.targetPosition.copy(this.currentPosition)
       if (this.model) {
         this.model.position.copy(this.currentPosition)
@@ -102,7 +102,7 @@ export class Creature {
     this.scene.add(this.model)
 
     // Keep centered for hologram display
-    this.currentPosition.set(0, 0, 0)
+    this.currentPosition.set(0, -1, 0)
     this.targetPosition.copy(this.currentPosition)
     this.model.position.copy(this.currentPosition)
   }
@@ -195,8 +195,8 @@ export class Creature {
   private updatePosition(_deltaTime: number): void {
     if (!this.model) return
 
-    // Keep character centered and still for hologram display
-    this.model.position.set(0, 0, 0)
+    // Keep character centered and still for hologram display (slightly below center for better vertical centering)
+    this.model.position.set(0, -2, 1)
   }
 
   setScale(scale: number): void {

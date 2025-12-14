@@ -49,8 +49,8 @@ export class Scene {
       0.1,
       1000
     )
-    this.camera.position.set(0, 5, 15)
-    this.camera.lookAt(0, 0, 0)
+    this.camera.position.set(0, 0.5, 6)
+    this.camera.lookAt(0, -0.5, 0)
 
     // Setup renderer
     this.renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -58,6 +58,8 @@ export class Scene {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     this.renderer.shadowMap.enabled = true
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping
+    this.renderer.toneMappingExposure = 1.2
     container.appendChild(this.renderer.domElement)
 
     // Setup lighting
@@ -82,6 +84,23 @@ export class Scene {
     this.directionalLight.shadow.camera.top = 20
     this.directionalLight.shadow.camera.bottom = -20
     this.scene.add(this.directionalLight)
+
+    // Add hemisphere light for better overall illumination
+    const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.0)
+    this.scene.add(hemisphereLight)
+
+    // Add additional point lights for better model visibility
+    const pointLight1 = new THREE.PointLight(0xffffff, 1.5, 50)
+    pointLight1.position.set(0, 5, 0)
+    this.scene.add(pointLight1)
+
+    const pointLight2 = new THREE.PointLight(0xffffff, 1.0, 50)
+    pointLight2.position.set(5, 3, 5)
+    this.scene.add(pointLight2)
+
+    const pointLight3 = new THREE.PointLight(0xffffff, 1.0, 50)
+    pointLight3.position.set(-5, 3, -5)
+    this.scene.add(pointLight3)
 
     // Add some environment geometry
     this.createEnvironment()
@@ -156,11 +175,13 @@ export class Scene {
     )
 
     // Update fog density
-    this.scene.fog!.density = lerp(
-      this.biome.fogDensity,
-      this.biome.fogDensity * 1.5,
-      intensity * 0.3
-    )
+    if (this.scene.fog instanceof THREE.FogExp2) {
+      this.scene.fog.density = lerp(
+        this.biome.fogDensity,
+        this.biome.fogDensity * 1.5,
+        intensity * 0.3
+      )
+    }
   }
 
   /**
@@ -199,9 +220,10 @@ export class Scene {
 
       // Gentle camera movement
       const time = this.clock.getElapsedTime()
-      this.camera.position.x = Math.sin(time * 0.1) * 2
-      this.camera.position.z = 15 + Math.cos(time * 0.1) * 2
-      this.camera.lookAt(0, 0, 0)
+      this.camera.position.x = Math.sin(time * 0.1) * 0.5
+      this.camera.position.y = 0.5 + Math.sin(time * 0.05) * 0.2
+      this.camera.position.z = 6 + Math.cos(time * 0.1) * 0.5
+      this.camera.lookAt(0, -0.5, 0)
 
       this.renderer.render(this.scene, this.camera)
     }
