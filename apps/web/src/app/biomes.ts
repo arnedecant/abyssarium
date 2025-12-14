@@ -7,8 +7,8 @@ import type { BiomePreset } from './types'
 export const BIOMES: Record<string, BiomePreset> = {
   abyssarium: {
     name: 'Abyssarium',
-    backgroundColor: 0x001122,
-    fogColor: 0x001122,
+    backgroundColor: 0x000000,
+    fogColor: 0x000000,
     fogDensity: 0.01,
     ambientLight: 1.2,
     directionalLight: {
@@ -22,7 +22,7 @@ export const BIOMES: Record<string, BiomePreset> = {
   void: {
     name: 'Void',
     backgroundColor: 0x000000,
-    fogColor: 0x110011,
+    fogColor: 0x000000,
     fogDensity: 0.02,
     ambientLight: 1.0,
     directionalLight: {
@@ -35,8 +35,8 @@ export const BIOMES: Record<string, BiomePreset> = {
   },
   eldritch: {
     name: 'Eldritch',
-    backgroundColor: 0x1a001a,
-    fogColor: 0x330033,
+    backgroundColor: 0x000000,
+    fogColor: 0x000000,
     fogDensity: 0.015,
     ambientLight: 1.1,
     directionalLight: {
