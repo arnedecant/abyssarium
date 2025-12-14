@@ -1,0 +1,13 @@
+[Unit]
+Description=Abyssarium kiosk browser
+After=graphical.target
+
+[Service]
+Environment=DISPLAY=:0
+User=pi
+ExecStart=/home/pi/abyssarium/pi/scripts/start-kiosk.sh
+Restart=always
+
+[Install]
+WantedBy=graphical.target
+
