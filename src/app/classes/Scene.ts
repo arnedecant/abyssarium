@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import type { BiomePreset } from '../types'
 import { Creature } from './Creature'
 import type { AudioMood } from '../types'
+import { lerp } from '../utils/helpers'
 
 export { Creature }
 
@@ -29,7 +30,7 @@ export class Scene {
   private lastWaveTime = 0
   private animationId: number | null = null
 
-  constructor(container: HTMLElement, biome: BiomePreset) {
+  constructor (container: HTMLElement, biome: BiomePreset) {
     this.container = container
     this.biome = biome
     this.clock = new THREE.Clock()
@@ -109,7 +110,7 @@ export class Scene {
     window.addEventListener('resize', () => this.handleResize())
   }
 
-  private createEnvironment(): void {
+  private createEnvironment (): void {
     // Add some ambient particles/atmosphere
     const particleCount = 100
     const particles = new THREE.BufferGeometry()
@@ -137,7 +138,7 @@ export class Scene {
   /**
    * Add a creature to the scene
    */
-  async addCreature(modelPath: string, animationNames?: string[]): Promise<Creature> {
+  async addCreature (modelPath: string, animationNames?: string[]): Promise<Creature> {
     const creature = new Creature(this.scene, this.clock)
     creature.setScale(this.biome.creatureScale)
     creature.setBaseSpeed(this.biome.creatureSpeed)
@@ -152,7 +153,7 @@ export class Scene {
   /**
    * Remove all creatures and add a new one
    */
-  async replaceCreature(modelPath: string, animationNames?: string[]): Promise<Creature> {
+  async replaceCreature (modelPath: string, animationNames?: string[]): Promise<Creature> {
     // Dispose all existing creatures
     this.creatures.forEach((creature) => creature.dispose())
     this.creatures = []
@@ -163,7 +164,7 @@ export class Scene {
   /**
    * Update audio mood for reactive behavior
    */
-  updateAudioMood(mood: AudioMood): void {
+  updateAudioMood (mood: AudioMood): void {
     this.audioMood = mood
 
     // Update environment based on audio
@@ -187,54 +188,45 @@ export class Scene {
   /**
    * Update presence level
    */
-  updatePresence(level: number): void {
+  updatePresence (level: number): void {
     this.presenceLevel = level
   }
 
   /**
    * Handle wave gesture
    */
-  handleWave(side: 'left' | 'right'): void {
+  handleWave (side: 'left' | 'right'): void {
     this.lastWaveTime = this.clock.getElapsedTime()
   }
 
   /**
    * Start the render loop
    */
-  start(): void {
-    const animate = () => {
-      this.animationId = requestAnimationFrame(animate)
+  start (): void {
+    this.animationId = requestAnimationFrame(this.start.bind(this))
 
-      const deltaTime = this.clock.getDelta()
-      const hasRecentWave = this.clock.getElapsedTime() - this.lastWaveTime < 2.0
+    const deltaTime = this.clock.getDelta()
+    const hasRecentWave = this.clock.getElapsedTime() - this.lastWaveTime < 2.0
 
-      // Update creatures
-      this.creatures.forEach((creature) => {
-        creature.update(
-          deltaTime,
-          this.audioMood,
-          this.presenceLevel,
-          hasRecentWave
-        )
-      })
-
-      // Gentle camera movement
-      const time = this.clock.getElapsedTime()
-      this.camera.position.x = Math.sin(time * 0.1) * 0.5
-      this.camera.position.y = 0.5 + Math.sin(time * 0.05) * 0.2
-      this.camera.position.z = 6 + Math.cos(time * 0.1) * 0.5
-      this.camera.lookAt(0, -0.5, 0)
-
-      this.renderer.render(this.scene, this.camera)
+    // Update creatures
+    for (const creature of this.creatures) {
+      creature.update(deltaTime, this.audioMood, this.presenceLevel, hasRecentWave)
     }
 
-    animate()
+    // Gentle camera movement
+    const time = this.clock.getElapsedTime()
+    this.camera.position.x = Math.sin(time * 0.1) * 0.5
+    this.camera.position.y = 0.5 + Math.sin(time * 0.05) * 0.2
+    this.camera.position.z = 6 + Math.cos(time * 0.1) * 0.5
+    this.camera.lookAt(0, -0.5, 0)
+
+    this.renderer.render(this.scene, this.camera)
   }
 
   /**
    * Stop the render loop
    */
-  stop(): void {
+  stop (): void {
     if (this.animationId !== null) {
       cancelAnimationFrame(this.animationId)
       this.animationId = null
@@ -244,7 +236,7 @@ export class Scene {
   /**
    * Change biome
    */
-  setBiome(biome: BiomePreset): void {
+  setBiome (biome: BiomePreset): void {
     this.biome = biome
     this.scene.background = new THREE.Color(biome.backgroundColor)
     this.scene.fog = new THREE.FogExp2(biome.fogColor, biome.fogDensity)
@@ -260,7 +252,7 @@ export class Scene {
     })
   }
 
-  private handleResize(): void {
+  private handleResize (): void {
     const width = this.container.clientWidth
     const height = this.container.clientHeight
 
@@ -269,7 +261,7 @@ export class Scene {
     this.renderer.setSize(width, height)
   }
 
-  dispose(): void {
+  dispose (): void {
     this.stop()
     this.creatures.forEach((creature) => creature.dispose())
     this.creatures = []
@@ -288,8 +280,4 @@ export class Scene {
     this.renderer.dispose()
     window.removeEventListener('resize', () => this.handleResize())
   }
-}
-
-function lerp(start: number, end: number, t: number): number {
-  return start + (end - start) * t
 }

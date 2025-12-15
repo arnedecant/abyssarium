@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import type { CreatureState, AudioMood } from '../types'
-import { lerp, randomRange, degToRad } from '../utils/helpers'
+import { lerp, randomRange } from '../utils/helpers'
 
 /**
  * Represents a creature in the Abyssarium
@@ -39,10 +39,19 @@ export class Creature {
   /**
    * Load a creature model from a GLB file
    */
-  async loadModel(path: string): Promise<void> {
+  async loadModel (path: string): Promise<void> {
     try {
       const loader = new GLTFLoader()
       const gltf = await loader.loadAsync(path)
+
+      gltf.scene.traverse((mesh) => {
+        if (!(mesh instanceof THREE.Mesh)) return
+        mesh.material.color.multiplyScalar(2.5)
+        // mesh.material.emissive.set('#b066ff')
+        mesh.material.emissiveIntensity = 0.8
+        mesh.material.roughness = 0.6
+        mesh.material.metalness = 0.5
+      })
 
       this.model = gltf.scene
       this.model.scale.set(this.scale, this.scale, this.scale)
@@ -83,7 +92,7 @@ export class Creature {
   /**
    * Create a simple placeholder geometry if model loading fails
    */
-  private createPlaceholder(): void {
+  private createPlaceholder (): void {
     const geometry = new THREE.OctahedronGeometry(1, 0)
     const material = new THREE.MeshStandardMaterial({
       color: 0x4488ff,
@@ -108,7 +117,7 @@ export class Creature {
   /**
    * Update creature state machine and behavior
    */
-  update(deltaTime: number, audioMood: AudioMood, presenceLevel: number, hasRecentWave: boolean): void {
+  update (deltaTime: number, audioMood: AudioMood, presenceLevel: number, hasRecentWave: boolean): void {
     this.audioMood = audioMood
     this.presenceLevel = presenceLevel
 
@@ -146,7 +155,7 @@ export class Creature {
     this.updatePosition(deltaTime)
   }
 
-  private transitionToState(newState: CreatureState): void {
+  private transitionToState (newState: CreatureState): void {
     this.state = newState
     this.stateStartTime = this.clock.getElapsedTime()
 
@@ -167,7 +176,7 @@ export class Creature {
     }
   }
 
-  private updateBehavior(deltaTime: number): void {
+  private updateBehavior (deltaTime: number): void {
     if (!this.model) return
 
     // Character stays still for hologram display
@@ -182,7 +191,7 @@ export class Creature {
     })
   }
 
-  private setNewTarget(): void {
+  private setNewTarget (): void {
     this.targetPosition.set(
       randomRange(-8, 8),
       randomRange(-3, 3),
@@ -190,45 +199,43 @@ export class Creature {
     )
   }
 
-  private updatePosition(_deltaTime: number): void {
+  private updatePosition (_deltaTime: number): void {
     if (!this.model) return
 
     // Keep character centered and still for hologram display (slightly below center for better vertical centering)
     this.model.position.set(0, -2, 1)
   }
 
-  setScale(scale: number): void {
+  setScale (scale: number): void {
     this.scale = scale
     if (this.model) {
       this.model.scale.set(scale, scale, scale)
     }
   }
 
-  setBaseSpeed(speed: number): void {
+  setBaseSpeed (speed: number): void {
     this.baseSpeed = speed
   }
 
-  getState(): CreatureState {
+  getState (): CreatureState {
     return this.state
   }
 
   /**
    * Get available animation names from the loaded model
    */
-  getAvailableAnimationNames(): string[] {
+  getAvailableAnimationNames (): string[] {
     return this.availableAnimations.map((clip) => clip.name)
   }
 
   /**
    * Play specific animations by name
    */
-  playAnimations(animationNames?: string[]): void {
+  playAnimations (animationNames?: string[]): void {
     if (!this.mixer || this.availableAnimations.length === 0) return
 
     // Stop all current animations
-    this.currentAnimationActions.forEach((action) => {
-      action.stop()
-    })
+    this.currentAnimationActions.forEach((action) => action.stop())
     this.currentAnimationActions = []
 
     // If no names provided, play all animations
@@ -251,17 +258,17 @@ export class Creature {
     }
   }
 
-  dispose(): void {
+  dispose (): void {
     if (this.model) {
       this.scene.remove(this.model)
       this.model.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.geometry.dispose()
-          if (Array.isArray(child.material)) {
-            child.material.forEach((mat) => mat.dispose())
-          } else {
-            child.material.dispose()
-          }
+        if (!(child instanceof THREE.Mesh)) return
+
+        child.geometry.dispose()
+        if (Array.isArray(child.material)) {
+          child.material.forEach((mat) => mat.dispose())
+        } else {
+          child.material.dispose()
         }
       })
     }
