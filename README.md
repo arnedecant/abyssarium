@@ -315,7 +315,7 @@ This keeps the **core of Abyssarium web-first and hostable** (no backend require
 
 ## Roadmap (High-Level)
 
-* [ ] Minimal Three.js scene + placeholder creature
+* [x] Minimal Three.js scene + placeholder creature
 * [ ] Camera-based motion detection (web-only)
 * [ ] Audio-reactive mood via Web Audio
 * [ ] Creature behavior state machine (idle / curious / playful / startled)

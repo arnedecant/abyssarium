@@ -1,10 +1,9 @@
 import { defineConfig } from 'vite'
-import { resolve } from 'path'
 
 export default defineConfig({
   resolve: {
     alias: {
-      '@': resolve(__dirname, './src'),
+      '@': '/src',
     },
   },
   server: {
@@ -14,7 +13,7 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
   },
-  publicDir: resolve(__dirname, '../../assets'),
+  publicDir: 'public',
 })
 
 

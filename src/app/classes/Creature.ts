@@ -42,8 +42,6 @@ export class Creature {
   async loadModel(path: string): Promise<void> {
     try {
       const loader = new GLTFLoader()
-      // Add error handler for debugging
-      loader.setPath('')
       const gltf = await loader.loadAsync(path)
 
       this.model = gltf.scene
