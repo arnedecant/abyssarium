@@ -1,5 +1,5 @@
 import { getBiome } from '../data/biomes'
-import { getAvailableModels, getAnimationsForModel } from '../data/models'
+import { getAvailableModels, getAnimationsForModel, getModelsByType, ModelType } from '../data/models'
 import Terminal from './Terminal'
 import type { GestureEvent, AudioMood } from '../types'
 import Scene from './Scene'
@@ -15,6 +15,7 @@ export default class Abyssarium {
   private statusElement: HTMLElement
   private permissionPrompt: HTMLElement
   private enableButton: HTMLElement
+  private typeSelect: HTMLSelectElement
   private modelSelect: HTMLSelectElement
   private animationSelect: HTMLSelectElement
   private currentBiome = 'abyssarium'
@@ -25,6 +26,7 @@ export default class Abyssarium {
     this.statusElement = document.getElementById('status')!
     this.permissionPrompt = document.getElementById('permission-prompt')!
     this.enableButton = document.getElementById('enable-media')!
+    this.typeSelect = document.getElementById('type-select') as HTMLSelectElement
     this.modelSelect = document.getElementById('model-select') as HTMLSelectElement
     this.animationSelect = document.getElementById('animation-select') as HTMLSelectElement
 
@@ -39,14 +41,19 @@ export default class Abyssarium {
     const biome = getBiome(this.currentBiome)
     this.scene = new Scene(this.container, biome)
 
+    // Setup type dropdown
+    this.setupTypeDropdown()
+
     // Setup model dropdown
     this.setupModelDropdown()
 
     // Setup animation dropdown
     this.setupAnimationDropdown()
 
-    // Load initial model
-    const initialModel = getAvailableModels()[0] || 'Fish.glb'
+    // Load initial model based on selected type
+    const selectedType = this.typeSelect.value as ModelType
+    const models = getModelsByType(selectedType)
+    const initialModel = models[0] || getAvailableModels()[0] || 'Fish.glb'
     this.modelSelect.value = initialModel
     await this.loadModel(initialModel)
 
@@ -70,15 +77,39 @@ export default class Abyssarium {
     document.addEventListener('keydown', (e) => this.handleKeyPress(e))
   }
 
-  private setupModelDropdown(): void {
-    const models = getAvailableModels()
+  private setupTypeDropdown(): void {
+    this.typeSelect.addEventListener('change', () => {
+      const selectedType = this.typeSelect.value as ModelType
+      this.updateModelDropdown(selectedType)
+    })
+  }
+
+  private updateModelDropdown(type: ModelType): void {
+    const models = getModelsByType(type)
+    const currentValue = this.modelSelect.value
     this.modelSelect.innerHTML = ''
+    
     models.forEach((model) => {
       const option = document.createElement('option')
       option.value = model
       option.textContent = model.replace('.glb', '')
       this.modelSelect.appendChild(option)
     })
+
+    // Try to preserve selection if it's still valid, otherwise select first model
+    if (models.includes(currentValue)) {
+      this.modelSelect.value = currentValue
+    } else if (models.length > 0) {
+      this.modelSelect.value = models[0]
+      // Auto-load the first model when type changes
+      this.loadModel(models[0])
+    }
+  }
+
+  private setupModelDropdown(): void {
+    // Initialize with models for the default selected type
+    const selectedType = this.typeSelect.value as ModelType
+    this.updateModelDropdown(selectedType)
 
     this.modelSelect.addEventListener('change', async () => {
       const selectedModel = this.modelSelect.value
