@@ -7,7 +7,7 @@ import { lerp, randomRange } from '../utils/helpers'
  * Represents a creature in the Abyssarium
  * Handles loading, animation, and behavior state machine
  */
-export class Creature {
+export default class Creature {
   private scene: THREE.Scene
   private model: THREE.Group | null = null
   private mixer: THREE.AnimationMixer | null = null

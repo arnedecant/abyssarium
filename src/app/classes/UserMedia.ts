@@ -1,12 +1,12 @@
 import type { GestureEvent, AudioMood } from '../types'
 import { mapRange, smoothstep } from '../utils/helpers'
-import { appConfig } from '../config'
+import { appConfig } from '../data/config'
 
 /**
  * Handles camera and microphone input via getUserMedia
  * Performs motion detection and audio analysis
  */
-export class UserMedia {
+export default class UserMedia {
   private videoElement: HTMLVideoElement | null = null
   private canvas: HTMLCanvasElement | null = null
   private ctx: CanvasRenderingContext2D | null = null

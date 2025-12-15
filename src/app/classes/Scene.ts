@@ -1,16 +1,14 @@
 import * as THREE from 'three'
 import type { BiomePreset } from '../types'
-import { Creature } from './Creature'
 import type { AudioMood } from '../types'
 import { lerp } from '../utils/helpers'
-
-export { Creature }
+import Creature from './Creature'
 
 /**
  * Main Three.js scene manager
  * Handles rendering, lighting, environment, and creatures
  */
-export class Scene {
+export default class Scene {
   private container: HTMLElement
   private scene: THREE.Scene
   private camera: THREE.PerspectiveCamera

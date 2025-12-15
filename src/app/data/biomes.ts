@@ -1,4 +1,4 @@
-import type { BiomePreset } from './types'
+import type { BiomePreset } from '../types'
 
 /**
  * Preset biome configurations
