@@ -21,7 +21,7 @@ export default class Abyssarium {
   private currentBiome = 'abyssarium'
   private currentCreature: any = null
 
-  constructor() {
+  constructor () {
     this.container = document.getElementById('app')!
     this.statusElement = document.getElementById('status')!
     this.permissionPrompt = document.getElementById('permission-prompt')!
@@ -33,7 +33,7 @@ export default class Abyssarium {
     this.init()
   }
 
-  private async init(): Promise<void> {
+  private async init (): Promise<void> {
     // Load configuration first
     this.updateStatus('Initializing scene...')
 
@@ -84,7 +84,7 @@ export default class Abyssarium {
     })
   }
 
-  private updateModelDropdown(type: ModelType): void {
+  private updateModelDropdown (type: ModelType): void {
     const models = getModelsByType(type)
     const currentValue = this.modelSelect.value
     this.modelSelect.innerHTML = ''
@@ -106,7 +106,7 @@ export default class Abyssarium {
     }
   }
 
-  private setupModelDropdown(): void {
+  private setupModelDropdown (): void {
     // Initialize with models for the default selected type
     const selectedType = this.typeSelect.value as ModelType
     this.updateModelDropdown(selectedType)
@@ -117,7 +117,7 @@ export default class Abyssarium {
     })
   }
 
-  private setupAnimationDropdown(): void {
+  private setupAnimationDropdown (): void {
     this.animationSelect.addEventListener('change', () => {
       const selectedAnimations = Array.from(this.animationSelect.selectedOptions).map(
         (opt) => (opt as HTMLOptionElement).value
@@ -128,7 +128,7 @@ export default class Abyssarium {
     })
   }
 
-  private async loadModel(modelName: string): Promise<void> {
+  private async loadModel (modelName: string): Promise<void> {
     this.updateStatus(`Loading model: ${modelName}...`)
     const modelPath = `/models/${modelName}`
 
@@ -168,7 +168,7 @@ export default class Abyssarium {
     }
   }
 
-  private async enableMedia(): Promise<void> {
+  private async enableMedia (): Promise<void> {
     this.permissionPrompt.classList.add('hidden')
     this.updateStatus('Requesting camera and microphone access...')
 
@@ -218,9 +218,7 @@ export default class Abyssarium {
       // Throttle status updates to avoid spam
       const now = Date.now()
       if (now - lastStatusUpdate > 1000) {
-        this.updateStatus(
-          `Audio: ${(mood.loudness * 100).toFixed(0)}% | Interacting...`
-        )
+        this.updateStatus(`Audio: ${(mood.loudness * 100).toFixed(0)}% | Interacting...`)
         lastStatusUpdate = now
       }
     })
@@ -235,7 +233,7 @@ export default class Abyssarium {
     }
   }
 
-  private handleKeyPress(event: KeyboardEvent): void {
+  private handleKeyPress (event: KeyboardEvent): void {
     // Biome switching (for testing)
     const biomes = ['abyssarium', 'void', 'eldritch']
     const currentIndex = biomes.indexOf(this.currentBiome)
@@ -248,12 +246,12 @@ export default class Abyssarium {
     }
   }
 
-  private updateStatus(message: string): void {
+  private updateStatus (message: string): void {
     this.statusElement.textContent = message
     Terminal.log(message)
   }
 
-  dispose(): void {
+  dispose (): void {
     this.scene?.dispose()
     this.userMedia?.dispose()
   }
