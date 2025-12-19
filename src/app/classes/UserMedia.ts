@@ -25,11 +25,11 @@ export default class UserMedia {
   private frameHeight = 120
   private isProcessing = false
 
-  constructor() {
+  constructor () {
     this.setupCanvas()
   }
 
-  private setupCanvas(): void {
+  private setupCanvas (): void {
     this.canvas = document.createElement('canvas')
     this.canvas.width = this.frameWidth
     this.canvas.height = this.frameHeight
@@ -39,7 +39,7 @@ export default class UserMedia {
   /**
    * Request camera and microphone access
    */
-  async requestAccess(): Promise<boolean> {
+  async requestAccess (): Promise<boolean> {
     try {
       this.stream = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -54,15 +54,11 @@ export default class UserMedia {
 
       // Always setup video element for motion detection, but only make it visible if enabled
       if (this.stream.getVideoTracks().length > 0) {
-        this.videoElement = document.createElement('video')
+        this.videoElement = document.getElementById('camera-feed') as HTMLVideoElement
         this.videoElement.srcObject = this.stream
         this.videoElement.autoplay = true
         this.videoElement.playsInline = true
         this.videoElement.muted = true // Mute video element to prevent audio playback
-        if (!appConfig.enableCamera) {
-          // Hide video element if camera display is disabled
-          this.videoElement.style.display = 'none'
-        }
         await this.videoElement.play()
       }
 
@@ -79,7 +75,7 @@ export default class UserMedia {
     }
   }
 
-  private async setupAudio(): Promise<void> {
+  private async setupAudio (): Promise<void> {
     if (!this.stream) return
 
     this.audioContext = new AudioContext()
@@ -99,7 +95,7 @@ export default class UserMedia {
     }
   }
 
-  private startProcessing(): void {
+  private startProcessing (): void {
     if (!this.videoElement || !this.ctx || !this.canvas) return
 
     const processFrame = () => {
@@ -132,7 +128,7 @@ export default class UserMedia {
     processFrame()
   }
 
-  private detectMotion(): void {
+  private detectMotion (): void {
     if (!this.ctx || !this.canvas) return
 
     const currentFrame = this.ctx.getImageData(
@@ -196,7 +192,7 @@ export default class UserMedia {
     this.previousFrame = currentFrame
   }
 
-  private analyzeAudio(): void {
+  private analyzeAudio (): void {
     if (!this.analyser || !this.dataArray) return
 
     // Create a properly typed array to satisfy TypeScript's strict type checking
@@ -243,23 +239,23 @@ export default class UserMedia {
     this.emitAudio(mood)
   }
 
-  onGesture(callback: (event: GestureEvent) => void): void {
+  onGesture (callback: (event: GestureEvent) => void): void {
     this.gestureCallbacks.push(callback)
   }
 
-  onAudio(callback: (mood: AudioMood) => void): void {
+  onAudio (callback: (mood: AudioMood) => void): void {
     this.audioCallbacks.push(callback)
   }
 
-  private emitGesture(event: GestureEvent): void {
+  private emitGesture (event: GestureEvent): void {
     this.gestureCallbacks.forEach((cb) => cb(event))
   }
 
-  private emitAudio(mood: AudioMood): void {
+  private emitAudio (mood: AudioMood): void {
     this.audioCallbacks.forEach((cb) => cb(mood))
   }
 
-  dispose(): void {
+  dispose (): void {
     if (this.stream) {
       this.stream.getTracks().forEach((track) => track.stop())
     }
