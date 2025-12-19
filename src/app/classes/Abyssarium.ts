@@ -176,16 +176,27 @@ export default class Abyssarium {
 
     // Setup gesture callbacks
     this.userMedia.onGesture((event: GestureEvent) => {
+      console.log('[Abyssarium] Gesture received:', {
+        type: event.type,
+        side: event.side,
+        strength: event.strength?.toFixed(2),
+        confidence: event.confidence.toFixed(3),
+        timestamp: event.timestamp.toFixed(1)
+      })
+
       if (event.type === 'wave') {
-        this.scene?.handleWave(event.side)
-        this.updateStatus(`Wave detected: ${event.side} side!`)
-        // Clear message after 2 seconds
-        setTimeout(() => {
-          this.updateStatus('Camera & microphone enabled. Interact with the creatures!')
-        }, 2000)
-      } else if (event.type === 'presence') {
-        this.scene?.updatePresence(event.level)
+        const side = event.side
+        if (side) {
+          this.scene?.handleWave(side)
+          this.updateStatus(`Wave detected: ${side} side!`)
+          // Clear message after 2 seconds
+          setTimeout(() => {
+            this.updateStatus('Camera & microphone enabled. Interact with the creatures!')
+          }, 2000)
+        }
       }
+      // Note: presence detection removed - GestureEvent no longer includes 'presence' type
+      // Presence can be derived from gesture confidence if needed in the future
     })
 
     // Setup audio callbacks

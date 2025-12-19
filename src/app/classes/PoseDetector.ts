@@ -1,16 +1,7 @@
 import * as TFPD from '@tensorflow-models/pose-detection'
 import * as TF from '@tensorflow/tfjs'
 import '@tensorflow/tfjs-backend-webgl'
-
-type GestureType = 'wave' | 'nod_yes' | 'nod_no' | 'punch'
-
-export interface GestureEvent {
-  type: GestureType
-  side?: 'left' | 'right'
-  strength?: number
-  confidence: number
-  timestamp: number
-}
+import type { GestureEvent } from '../types'
 
 export class PoseDetector {
   private detector?: TFPD.PoseDetector
@@ -45,13 +36,98 @@ export class PoseDetector {
   private detectGestures(
     pose: TFPD.Pose,
     prevPose: TFPD.Pose | undefined,
-    dt: number,
+    _dt: number,
     now: number
   ): GestureEvent[] {
     const events: GestureEvent[] = []
 
-    // TODO: implement wave / nod / punch using keypoints
-    // (nose, shoulders, wrists, etc.)
+    if (!pose.keypoints || pose.keypoints.length === 0) {
+      return events
+    }
+
+    // Calculate average confidence for debugging
+    const avgConfidence = pose.keypoints.reduce((sum, kp) => sum + (kp.score || 0), 0) / pose.keypoints.length
+
+    // Wave detection: compare wrist positions over time
+    if (prevPose && prevPose.keypoints) {
+      const leftWrist = pose.keypoints.find(kp => kp.name === 'left_wrist')
+      const rightWrist = pose.keypoints.find(kp => kp.name === 'right_wrist')
+      const prevLeftWrist = prevPose.keypoints.find(kp => kp.name === 'left_wrist')
+      const prevRightWrist = prevPose.keypoints.find(kp => kp.name === 'right_wrist')
+
+      if (leftWrist && prevLeftWrist && leftWrist.score && prevLeftWrist.score) {
+        const leftMovement = Math.abs(leftWrist.x - prevLeftWrist.x) + Math.abs(leftWrist.y - prevLeftWrist.y)
+        if (leftMovement > 30 && leftWrist.score > 0.5) {
+          // Calculate strength based on movement magnitude (normalized)
+          const strength = Math.min(leftMovement / 100, 1.0)
+          const event: GestureEvent = {
+            type: 'wave',
+            side: 'left',
+            strength,
+            confidence: leftWrist.score,
+            timestamp: now
+          }
+          events.push(event)
+          console.log('[PoseDetector] Gesture detected:', {
+            type: event.type,
+            side: event.side,
+            strength: strength.toFixed(2),
+            confidence: leftWrist.score.toFixed(3),
+            movement: leftMovement.toFixed(1),
+            avgPoseConfidence: avgConfidence.toFixed(3),
+            timestamp: now.toFixed(1)
+          })
+        } else {
+          // Debug: log when movement is detected but doesn't meet threshold
+          if (leftMovement > 20) {
+            console.debug('[PoseDetector] Left wrist movement detected but below threshold:', {
+              movement: leftMovement.toFixed(1),
+              confidence: leftWrist.score.toFixed(3),
+              threshold: 30,
+              minConfidence: 0.5
+            })
+          }
+        }
+      }
+
+      if (rightWrist && prevRightWrist && rightWrist.score && prevRightWrist.score) {
+        const rightMovement = Math.abs(rightWrist.x - prevRightWrist.x) + Math.abs(rightWrist.y - prevRightWrist.y)
+        if (rightMovement > 30 && rightWrist.score > 0.5) {
+          // Calculate strength based on movement magnitude (normalized)
+          const strength = Math.min(rightMovement / 100, 1.0)
+          const event: GestureEvent = {
+            type: 'wave',
+            side: 'right',
+            strength,
+            confidence: rightWrist.score,
+            timestamp: now
+          }
+          events.push(event)
+          console.log('[PoseDetector] Gesture detected:', {
+            type: event.type,
+            side: event.side,
+            strength: strength.toFixed(2),
+            confidence: rightWrist.score.toFixed(3),
+            movement: rightMovement.toFixed(1),
+            avgPoseConfidence: avgConfidence.toFixed(3),
+            timestamp: now.toFixed(1)
+          })
+        } else {
+          // Debug: log when movement is detected but doesn't meet threshold
+          if (rightMovement > 20) {
+            console.debug('[PoseDetector] Right wrist movement detected but below threshold:', {
+              movement: rightMovement.toFixed(1),
+              confidence: rightWrist.score.toFixed(3),
+              threshold: 30,
+              minConfidence: 0.5
+            })
+          }
+        }
+      }
+    }
+
+    // TODO: implement nod_yes, nod_no, and punch detection using keypoints
+    // (nose, head, shoulders, elbows, etc.)
 
     return events
   }

@@ -2,9 +2,15 @@
  * Type definitions for Abyssarium
  */
 
-export type GestureEvent =
-  | { type: 'wave'; side: 'left' | 'right' }
-  | { type: 'presence'; level: number } // 0-1
+type GestureType = 'wave' | 'nod_yes' | 'nod_no' | 'punch'
+
+export interface GestureEvent {
+  type: GestureType
+  side?: 'left' | 'right'
+  strength?: number
+  confidence: number
+  timestamp: number
+}
 
 export type CreatureState = 'idle' | 'curious' | 'playful' | 'startled';
 

@@ -1,6 +1,7 @@
 import type { GestureEvent, AudioMood } from '../types'
 import { mapRange, smoothstep } from '../utils/helpers'
 import { appConfig } from '../data/config'
+import { PoseDetector } from './PoseDetector'
 
 /**
  * Handles camera and microphone input via getUserMedia
@@ -8,33 +9,17 @@ import { appConfig } from '../data/config'
  */
 export default class UserMedia {
   private videoElement: HTMLVideoElement | null = null
-  private canvas: HTMLCanvasElement | null = null
-  private ctx: CanvasRenderingContext2D | null = null
   private stream: MediaStream | null = null
   private audioContext: AudioContext | null = null
   private analyser: AnalyserNode | null = null
   private microphone: MediaStreamAudioSourceNode | null = null
   private dataArray: Uint8Array | null = null
+  private poseDetector: PoseDetector | null = null
 
   private gestureCallbacks: ((event: GestureEvent) => void)[] = []
   private audioCallbacks: ((mood: AudioMood) => void)[] = []
 
-  private previousFrame: ImageData | null = null
-  private motionThreshold = 30
-  private frameWidth = 160
-  private frameHeight = 120
   private isProcessing = false
-
-  constructor () {
-    this.setupCanvas()
-  }
-
-  private setupCanvas (): void {
-    this.canvas = document.createElement('canvas')
-    this.canvas.width = this.frameWidth
-    this.canvas.height = this.frameHeight
-    this.ctx = this.canvas.getContext('2d', { willReadFrequently: true })
-  }
 
   /**
    * Request camera and microphone access
@@ -52,7 +37,7 @@ export default class UserMedia {
         },
       })
 
-      // Always setup video element for motion detection, but only make it visible if enabled
+      // Always setup video element for pose detection, but only make it visible if enabled
       if (this.stream.getVideoTracks().length > 0) {
         this.videoElement = document.getElementById('camera-feed') as HTMLVideoElement
         this.videoElement.srcObject = this.stream
@@ -60,12 +45,16 @@ export default class UserMedia {
         this.videoElement.playsInline = true
         this.videoElement.muted = true // Mute video element to prevent audio playback
         await this.videoElement.play()
+
+        // Initialize pose detector
+        this.poseDetector = new PoseDetector()
+        await this.poseDetector.init()
       }
 
       // Always setup audio analysis for audio mood detection
       await this.setupAudio()
 
-      // Always start processing for motion detection
+      // Always start processing for pose detection
       this.startProcessing()
 
       return true
@@ -96,9 +85,9 @@ export default class UserMedia {
   }
 
   private startProcessing (): void {
-    if (!this.videoElement || !this.ctx || !this.canvas) return
+    if (!this.videoElement) return
 
-    const processFrame = () => {
+    const processFrame = async () => {
       if (this.isProcessing) {
         requestAnimationFrame(processFrame)
         return
@@ -106,17 +95,11 @@ export default class UserMedia {
 
       this.isProcessing = true
 
-      // Draw video frame to canvas
-      this.ctx!.drawImage(
-        this.videoElement!,
-        0,
-        0,
-        this.frameWidth,
-        this.frameHeight
-      )
-
-      // Process motion detection
-      this.detectMotion()
+      // Process pose detection
+      if (this.poseDetector && this.videoElement) {
+        const gestureEvents = await this.poseDetector.update(this.videoElement)
+        gestureEvents.forEach(event => this.emitGesture(event))
+      }
 
       // Process audio
       this.analyzeAudio()
@@ -128,69 +111,6 @@ export default class UserMedia {
     processFrame()
   }
 
-  private detectMotion (): void {
-    if (!this.ctx || !this.canvas) return
-
-    const currentFrame = this.ctx.getImageData(
-      0,
-      0,
-      this.frameWidth,
-      this.frameHeight
-    )
-
-    if (!this.previousFrame) {
-      this.previousFrame = currentFrame
-      return
-    }
-
-    // Frame differencing
-    let totalMotion = 0
-    const regionMotion: number[] = [0, 0, 0] // left, center, right
-
-    for (let i = 0; i < currentFrame.data.length; i += 4) {
-      const r = Math.abs(currentFrame.data[i] - this.previousFrame.data[i])
-      const g = Math.abs(
-        currentFrame.data[i + 1] - this.previousFrame.data[i + 1]
-      )
-      const b = Math.abs(
-        currentFrame.data[i + 2] - this.previousFrame.data[i + 2]
-      )
-      const diff = (r + g + b) / 3
-
-      if (diff > this.motionThreshold) {
-        totalMotion += diff
-
-        // Determine region (left, center, right)
-        const x = (i / 4) % this.frameWidth
-        const region = x < this.frameWidth / 3 ? 0 : x < (this.frameWidth * 2) / 3 ? 1 : 2
-        regionMotion[region] += diff
-      }
-    }
-
-    // Normalize motion
-    const normalizedMotion = Math.min(
-      totalMotion / (this.frameWidth * this.frameHeight * 255),
-      1.0
-    )
-
-    // Detect gestures
-    const leftMotion = regionMotion[0] / (this.frameWidth * this.frameHeight * 255 / 3)
-    const rightMotion = regionMotion[2] / (this.frameWidth * this.frameHeight * 255 / 3)
-    const motionRatio = Math.max(leftMotion, rightMotion) / (Math.min(leftMotion, rightMotion) + 0.1)
-
-    if (motionRatio > 2.0 && normalizedMotion > 0.1) {
-      const side = leftMotion > rightMotion ? 'left' : 'right'
-      this.emitGesture({ type: 'wave', side })
-    }
-
-    // Emit presence level
-    this.emitGesture({
-      type: 'presence',
-      level: smoothstep(0.05, 0.3, normalizedMotion),
-    })
-
-    this.previousFrame = currentFrame
-  }
 
   private analyzeAudio (): void {
     if (!this.analyser || !this.dataArray) return
@@ -263,8 +183,7 @@ export default class UserMedia {
       this.audioContext.close()
     }
     this.videoElement = null
-    this.canvas = null
-    this.ctx = null
+    this.poseDetector = null
     this.stream = null
     this.audioContext = null
     this.analyser = null
