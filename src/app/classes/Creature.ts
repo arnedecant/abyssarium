@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import type { CreatureState, AudioMood } from '../types'
 import { lerp, randomRange } from '../utils/helpers'
+import Terminal from './Terminal'
 
 /**
  * Represents a creature in the Abyssarium
@@ -82,8 +83,8 @@ export default class Creature {
         this.model.position.copy(this.currentPosition)
       }
     } catch (error) {
-      console.error('Error loading creature model:', error)
-      console.error('Attempted path:', path)
+      Terminal.error('Error loading creature model:', error)
+      Terminal.error('Attempted path:', path)
       // Create a placeholder if model fails to load
       this.createPlaceholder()
     }

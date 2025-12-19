@@ -2,6 +2,7 @@ import type { GestureEvent, AudioMood } from '../types'
 import { mapRange, smoothstep } from '../utils/helpers'
 import { appConfig } from '../data/config'
 import { PoseDetector } from './PoseDetector'
+import Terminal from './Terminal'
 
 /**
  * Handles camera and microphone input via getUserMedia
@@ -59,7 +60,7 @@ export default class UserMedia {
 
       return true
     } catch (error) {
-      console.error('Error accessing media devices:', error)
+      Terminal.error('Error accessing media devices:', error)
       return false
     }
   }

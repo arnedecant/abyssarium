@@ -163,7 +163,7 @@ export default class Abyssarium {
         this.updateStatus('Model loaded. No animations found.')
       }
     } catch (error) {
-      console.error('Error loading model:', error)
+      Terminal.error('Error loading model:', error)
       this.updateStatus(`Error loading model: ${modelName}`)
     }
   }
@@ -176,7 +176,7 @@ export default class Abyssarium {
 
     // Setup gesture callbacks
     this.userMedia.onGesture((event: GestureEvent) => {
-      console.log('[Abyssarium] Gesture received:', {
+      Terminal.log('Gesture received:', {
         type: event.type,
         side: event.side,
         strength: event.strength?.toFixed(2),
@@ -194,6 +194,18 @@ export default class Abyssarium {
             this.updateStatus('Camera & microphone enabled. Interact with the creatures!')
           }, 2000)
         }
+      } else if (event.type === 'nod_yes') {
+        this.updateStatus('Head nod (yes) detected!')
+        // Clear message after 2 seconds
+        setTimeout(() => {
+          this.updateStatus('Camera & microphone enabled. Interact with the creatures!')
+        }, 2000)
+      } else if (event.type === 'nod_no') {
+        this.updateStatus('Head shake (no) detected!')
+        // Clear message after 2 seconds
+        setTimeout(() => {
+          this.updateStatus('Camera & microphone enabled. Interact with the creatures!')
+        }, 2000)
       }
       // Note: presence detection removed - GestureEvent no longer includes 'presence' type
       // Presence can be derived from gesture confidence if needed in the future
