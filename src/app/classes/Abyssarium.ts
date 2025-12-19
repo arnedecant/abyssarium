@@ -195,12 +195,14 @@ export default class Abyssarium {
           }, 2000)
         }
       } else if (event.type === 'nod_yes') {
+        this.scene?.handleNodYes()
         this.updateStatus('Head nod (yes) detected!')
         // Clear message after 2 seconds
         setTimeout(() => {
           this.updateStatus('Camera & microphone enabled. Interact with the creatures!')
         }, 2000)
       } else if (event.type === 'nod_no') {
+        this.scene?.handleNodNo()
         this.updateStatus('Head shake (no) detected!')
         // Clear message after 2 seconds
         setTimeout(() => {

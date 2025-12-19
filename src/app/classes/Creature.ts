@@ -30,6 +30,11 @@ export default class Creature {
   private lastWaveTime = 0
   private availableAnimations: THREE.AnimationClip[] = []
   private currentAnimationActions: THREE.AnimationAction[] = []
+  
+  // Gesture animation state
+  private gestureAnimationAction: THREE.AnimationAction | null = null
+  private idleAnimationNames: string[] = []
+  private isPlayingGesture = false
 
   constructor(scene: THREE.Scene, clock: THREE.Clock) {
     this.scene = scene
@@ -64,12 +69,14 @@ export default class Creature {
       // Setup animations
       if (this.availableAnimations.length > 0) {
         this.mixer = new THREE.AnimationMixer(this.model)
+        // Find and store idle animations
+        this.idleAnimationNames = this.availableAnimations
+          .filter((clip) => clip.name.toLowerCase().includes('idle'))
+          .map((clip) => clip.name)
+        
         // Play idle animation by default if it exists, otherwise play all animations
-        const idleAnimation = this.availableAnimations.find(
-          (clip) => clip.name.toLowerCase().includes('idle')
-        )
-        if (idleAnimation) {
-          this.playAnimations([idleAnimation.name])
+        if (this.idleAnimationNames.length > 0) {
+          this.playAnimations(this.idleAnimationNames)
         } else {
           // Fallback: play all animations if no idle found
           this.playAnimations()
@@ -190,6 +197,112 @@ export default class Creature {
         child.material.emissiveIntensity = intensity
       }
     })
+
+    // Check if gesture animation has completed
+    this.checkGestureAnimationComplete()
+  }
+
+  /**
+   * Check if the current gesture animation has finished and return to idle
+   */
+  private checkGestureAnimationComplete (): void {
+    if (!this.isPlayingGesture || !this.gestureAnimationAction) return
+
+    // Check if animation has finished (time >= duration)
+    if (this.gestureAnimationAction.time >= this.gestureAnimationAction.getClip().duration) {
+      // Animation complete, return to idle
+      this.returnToIdle()
+    }
+  }
+
+  /**
+   * Find an animation by searching for keywords in its name (case-insensitive)
+   */
+  private findAnimationByKeywords (keywords: string[]): THREE.AnimationClip | null {
+    const lowerKeywords = keywords.map(k => k.toLowerCase())
+    return this.availableAnimations.find((clip) => {
+      const clipName = clip.name.toLowerCase()
+      return lowerKeywords.some(keyword => clipName.includes(keyword))
+    }) || null
+  }
+
+  /**
+   * Play a gesture animation, ensuring it completes before allowing new animations
+   */
+  private playGestureAnimation (animationClip: THREE.AnimationClip): void {
+    if (!this.mixer || this.isPlayingGesture) {
+      // Already playing a gesture, ignore new request
+      return
+    }
+
+    // Stop current idle animations
+    this.currentAnimationActions.forEach((action) => action.stop())
+    this.currentAnimationActions = []
+
+    // Play the gesture animation
+    this.gestureAnimationAction = this.mixer.clipAction(animationClip)
+    this.gestureAnimationAction.reset()
+    this.gestureAnimationAction.setLoop(THREE.LoopOnce, 1) // Play once
+    this.gestureAnimationAction.clampWhenFinished = true // Hold last frame
+    this.gestureAnimationAction.play()
+    this.isPlayingGesture = true
+
+    Terminal.log(`Playing gesture animation: ${animationClip.name}`)
+  }
+
+  /**
+   * Return to idle animations after gesture completes
+   */
+  private returnToIdle (): void {
+    if (this.gestureAnimationAction) {
+      this.gestureAnimationAction.stop()
+      this.gestureAnimationAction = null
+    }
+    this.isPlayingGesture = false
+
+    // Resume idle animations
+    if (this.idleAnimationNames.length > 0) {
+      this.playAnimations(this.idleAnimationNames)
+    } else {
+      // Fallback: play all animations if no idle found
+      this.playAnimations()
+    }
+  }
+
+  /**
+   * Trigger a head nod animation (yes - up/down)
+   * Uses built-in animation if available, otherwise does nothing
+   */
+  nodYes (): void {
+    // Search for "yes" or "nod" animations (but exclude "no")
+    const yesAnimation = this.availableAnimations.find((clip) => {
+      const name = clip.name.toLowerCase()
+      return (name.includes('yes') || name.includes('nod')) && !name.includes('no')
+    })
+    
+    if (yesAnimation) {
+      this.playGestureAnimation(yesAnimation)
+    } else {
+      Terminal.debug('No "yes" animation found in model')
+    }
+  }
+
+  /**
+   * Trigger a head shake animation (no - left/right)
+   * Uses built-in animation if available, otherwise does nothing
+   */
+  nodNo (): void {
+    // Search for "no" or "shake" animations
+    const noAnimation = this.availableAnimations.find((clip) => {
+      const name = clip.name.toLowerCase()
+      return name.includes('no') || name.includes('shake')
+    })
+    
+    if (noAnimation) {
+      this.playGestureAnimation(noAnimation)
+    } else {
+      Terminal.debug('No "no" animation found in model')
+    }
   }
 
   private setNewTarget (): void {
@@ -231,11 +344,17 @@ export default class Creature {
 
   /**
    * Play specific animations by name
+   * Does not interrupt gesture animations - they must complete first
    */
   playAnimations (animationNames?: string[]): void {
     if (!this.mixer || this.availableAnimations.length === 0) return
 
-    // Stop all current animations
+    // Don't interrupt gesture animations
+    if (this.isPlayingGesture) {
+      return
+    }
+
+    // Stop current idle animations
     this.currentAnimationActions.forEach((action) => action.stop())
     this.currentAnimationActions = []
 

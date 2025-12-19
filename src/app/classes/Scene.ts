@@ -198,6 +198,26 @@ export default class Scene {
   }
 
   /**
+   * Handle head nod gesture (yes)
+   * Creature responds with opposite: shakes head "no"
+   */
+  handleNodYes (): void {
+    for (const creature of this.creatures) {
+      creature.nodNo()
+    }
+  }
+
+  /**
+   * Handle head shake gesture (no)
+   * Creature responds with opposite: nods head "yes"
+   */
+  handleNodNo (): void {
+    for (const creature of this.creatures) {
+      creature.nodYes()
+    }
+  }
+
+  /**
    * Start the render loop
    */
   start (): void {
