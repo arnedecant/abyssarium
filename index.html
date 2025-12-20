@@ -9,11 +9,12 @@
 <body>
   <div id="app">
     <div id="status">Initializing...</div>
-    <div id="controls">
+    <div id="controls" class="debug-hidden">
       <label for="type-select">Type:</label>
       <select id="type-select">
-        <option value="normal">Normal</option>
+        <option value="head">Head</option>
         <option value="flying">Flying</option>
+        <option value="normal">Normal</option>
       </select>
       <label for="model-select">Model:</label>
       <select id="model-select"></select>
@@ -26,8 +27,7 @@
       <p>This experience works best with camera and microphone access.</p>
       <button id="enable-media">Enable Camera & Microphone</button>
     </div>
-    <video id="camera-feed" class="camera-feed hidden" autoplay playsinline muted></video>
-    <canvas id="motion-canvas" class="motion-canvas hidden" width="640" height="480"></canvas>
+    <video id="camera-feed" class="camera-feed debug-hidden" autoplay playsinline muted></video>
   </div>
   <script type="module" src="/src/main.ts"></script>
 </body>

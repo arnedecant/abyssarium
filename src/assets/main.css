@@ -16,6 +16,15 @@ body {
   position: relative;
 }
 
+#app .debug-hidden,
+.hidden {
+  display: none;
+}
+
+#app.debug .debug-hidden {
+  display: flex;
+}
+
 #status {
   position: absolute;
   top: 20px;
@@ -30,6 +39,7 @@ body {
 }
 
 #controls {
+  flex-direction: column;
   position: absolute;
   top: 20px;
   right: 20px;
@@ -112,12 +122,7 @@ body {
   background: #5aaeff;
 }
 
-.hidden {
-  display: none;
-}
-
 .camera-feed {
-  display: block;
   position: absolute;
   bottom: 0;
   right: 0;

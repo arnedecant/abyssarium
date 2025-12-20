@@ -1,245 +1,282 @@
-export enum ModelType {
-  Normal = 'normal',
-  Flying = 'flying',
-}
+import { ModelConfig, ModelType } from "../types"
 
-export interface ModelConfig {
-  name: string;
-  type: ModelType;
-  animations: string[];
-}
 
 export const MODELS: ModelConfig[] = [
   {
-    name: 'Alien.glb',
-    type: ModelType.Normal,
-    animations: [],
-  },
-  // {
-  //   name: 'Alien-RRliSQBP7r.glb',
-  //   type: ModelType.Normal,
-  //   animations: [],
-  // },
-  {
-    name: 'Alpaking.glb',
-    type: ModelType.Flying,
+    name: 'Alien',
+    model: 'Alien.glb',
+    type: ModelType.Head,
     animations: [],
   },
   {
-    name: 'Alpaking Evolved.glb',
-    type: ModelType.Flying,
-    animations: [],
-  },
-  {
-    name: 'Armabee.glb',
-    type: ModelType.Flying,
-    animations: [],
-  },
-  {
-    name: 'Armabee Evolved.glb',
-    type: ModelType.Flying,
-    animations: [],
-  },
-  // {
-  //   name: 'Birb.glb',
-  //   type: ModelType.Normal,
-  //   animations: [],
-  // },
-  // {
-  //   name: 'Blue Demon.glb',
-  //   type: ModelType.Normal,
-  //   animations: [],
-  // },
-  // {
-  //   name: 'Bunny.glb',
-  //   type: ModelType.Normal,
-  //   animations: [],
-  // },
-  {
-    name: 'Cactoro.glb',
-    type: ModelType.Normal,
-    animations: [],
-  },
-  // {
-  //   name: 'Cactoro-IGn9lhdama.glb',
-  //   type: ModelType.Normal,
-  //   animations: [],
-  // },
-  {
-    name: 'Cat.glb',
+    name: 'Alien',
+    model: 'Alien-RRliSQBP7r.glb',
     type: ModelType.Normal,
     animations: [],
   },
   {
-    name: 'Chicken.glb',
+    name: 'Alpaking',
+    model: 'Alpaking.glb',
+    type: ModelType.Flying,
+    animations: [],
+  },
+  {
+    name: 'Alpaking Evolved',
+    model: 'Alpaking Evolved.glb',
+    type: ModelType.Flying,
+    animations: [],
+  },
+  {
+    name: 'Armabee',
+    model: 'Armabee.glb',
+    type: ModelType.Flying,
+    animations: [],
+  },
+  {
+    name: 'Armabee Evolved',
+    model: 'Armabee Evolved.glb',
+    type: ModelType.Flying,
+    animations: [],
+  },
+  {
+    name: 'Birb',
+    model: 'Birb.glb',
+    type: ModelType.Head,
+    animations: [],
+  },
+  {
+    name: 'Blue Demon',
+    model: 'Blue Demon.glb',
     type: ModelType.Normal,
     animations: [],
   },
   {
-    name: 'Demon.glb',
+    name: 'Bunny',
+    model: 'Bunny.glb',
+    type: ModelType.Normal,
+    animations: [],
+  },
+  {
+    name: 'Cactoro',
+    model: 'Cactoro.glb',
+    type: ModelType.Head,
+    animations: [],
+  },
+  {
+    name: 'Cactoro',
+    model: 'Cactoro-IGn9lhdama.glb',
+    type: ModelType.Normal,
+    animations: [],
+  },
+  {
+    name: 'Cat',
+    model: 'Cat.glb',
+    type: ModelType.Head,
+    animations: [],
+  },
+  {
+    name: 'Chicken',
+    model: 'Chicken.glb',
+    type: ModelType.Head,
+    animations: [],
+  },
+  {
+    name: 'Demon',
+    model: 'Demon.glb',
     type: ModelType.Flying,
+    animations: [],
+  },
+  {
+    name: 'Demon',
+    model: 'Demon-LnfIziKv4o.glb',
+    type: ModelType.Normal,
+    animations: [],
+  },
+  {
+    name: 'Dino',
+    model: 'Dino.glb',
+    type: ModelType.Normal,
+    animations: [],
+  },
+  {
+    name: 'Dragon',
+    model: 'Dragon.glb',
+    type: ModelType.Flying,
+    animations: [],
+  },
+  {
+    name: 'Dragon Evolved',
+    model: 'Dragon Evolved.glb',
+    type: ModelType.Flying,
+    animations: [],
+  },
+  {
+    name: 'Fish',
+    model: 'Fish.glb',
+    type: ModelType.Head,
+    animations: [],
+  },
+  {
+    name: 'Fish',
+    model: 'Fish-ypEYhCImAB.glb',
+    type: ModelType.Normal,
+    animations: [],
+  },
+  {
+    name: 'Frog',
+    model: 'Frog.glb',
+    type: ModelType.Normal,
+    animations: [],
+  },
+  {
+    name: 'Ghost',
+    model: 'Ghost.glb',
+    type: ModelType.Flying,
+    animations: [],
+  },
+  {
+    name: 'Ghost Skull',
+    model: 'Ghost Skull.glb',
+    type: ModelType.Flying,
+    animations: [],
+  },
+  {
+    name: 'Glub',
+    model: 'Glub.glb',
+    type: ModelType.Flying,
+    animations: [],
+  },
+  {
+    name: 'Glub Evolved',
+    model: 'Glub Evolved.glb',
+    type: ModelType.Flying,
+    animations: [],
+  },
+  {
+    name: 'Goleling',
+    model: 'Goleling.glb',
+    type: ModelType.Flying,
+    animations: [],
+  },
+  {
+    name: 'Goleling Evolved',
+    model: 'Goleling Evolved.glb',
+    type: ModelType.Flying,
+    animations: [],
+  },
+  {
+    name: 'Green Blob',
+    model: 'Green Blob.glb',
+    type: ModelType.Head,
+    animations: [],
+  },
+  {
+    name: 'Green Spiky Blob',
+    model: 'Green Spiky Blob.glb',
+    type: ModelType.Head,
     animations: [],
   },
   // {
-  //   name: 'Demon-LnfIziKv4o.glb',
-  //   type: ModelType.Normal,
-  //   animations: [],
-  // },
-  // {
-  //   name: 'Dino.glb',
-  //   type: ModelType.Normal,
+  //   model: 'Haunter.glb',
+  //   type: ModelType.Head,
   //   animations: [],
   // },
   {
-    name: 'Dragon.glb',
+    name: 'Hywirl',
+    model: 'Hywirl.glb',
     type: ModelType.Flying,
     animations: [],
   },
   {
-    name: 'Dragon Evolved.glb',
+    name: 'Monkroose',
+    model: 'Monkroose.glb',
+    type: ModelType.Normal,
+    animations: [],
+  },
+  {
+    name: 'Mushnub',
+    model: 'Mushnub.glb',
+    type: ModelType.Head,
+    animations: [],
+  },
+  {
+    name: 'Mushnub Evolved',
+    model: 'Mushnub Evolved.glb',
+    type: ModelType.Head,
+    animations: [],
+  },
+  {
+    name: 'Mushroom King',
+    model: 'Mushroom King.glb',
+    type: ModelType.Normal,
+    animations: [],
+  },
+  {
+    name: 'Ninja',
+    model: 'Ninja.glb',
+    type: ModelType.Head,
+    animations: [],
+  },
+  {
+    name: 'Ninja',
+    model: 'Ninja-xGYmeDpfTu.glb',
+    type: ModelType.Normal,
+    animations: [],
+  },
+  {
+    name: 'Orc',
+    model: 'Orc.glb',
+    type: ModelType.Normal,
+    animations: [],
+  },
+  {
+    name: 'Orc Enemy',
+    model: 'Orc Enemy.glb',
+    type: ModelType.Head,
+    animations: [],
+  },
+  {
+    name: 'Pigeon',
+    model: 'Pigeon.glb',
+    type: ModelType.Head,
+    animations: [],
+  },
+  {
+    name: 'Pink Blob',
+    model: 'Pink Blob.glb',
+    type: ModelType.Head,
+    animations: [],
+  },
+  {
+    name: 'Squidle',
+    model: 'Squidle.glb',
     type: ModelType.Flying,
     animations: [],
   },
   {
-    name: 'Fish.glb',
-    type: ModelType.Normal,
-    animations: [],
-  },
-  // {
-  //   name: 'Fish-ypEYhCImAB.glb',
-  //   type: ModelType.Normal,
-  //   animations: [],
-  // },
-  // {
-  //   name: 'Frog.glb',
-  //   type: ModelType.Normal,
-  //   animations: [],
-  // },
-  {
-    name: 'Ghost.glb',
+    name: 'Tribal',
+    model: 'Tribal.glb',
     type: ModelType.Flying,
     animations: [],
   },
   {
-    name: 'Ghost Skull.glb',
-    type: ModelType.Flying,
+    name: 'Wizard',
+    model: 'Wizard.glb',
+    type: ModelType.Head,
     animations: [],
   },
   {
-    name: 'Glub.glb',
-    type: ModelType.Flying,
+    name: 'Yeti',
+    model: 'Yeti.glb',
+    type: ModelType.Head,
     animations: [],
   },
   {
-    name: 'Glub Evolved.glb',
-    type: ModelType.Flying,
-    animations: [],
-  },
-  {
-    name: 'Goleling.glb',
-    type: ModelType.Flying,
-    animations: [],
-  },
-  {
-    name: 'Goleling Evolved.glb',
-    type: ModelType.Flying,
-    animations: [],
-  },
-  {
-    name: 'Green Blob.glb',
+    name: 'Yeti',
+    model: 'Yeti-ceRHrn8HHE.glb',
     type: ModelType.Normal,
     animations: [],
   },
-  {
-    name: 'Green Spiky Blob.glb',
-    type: ModelType.Normal,
-    animations: [],
-  },
-  // {
-  //   name: 'Haunter.glb',
-  //   type: ModelType.Normal,
-  //   animations: [],
-  // },
-  {
-    name: 'Hywirl.glb',
-    type: ModelType.Flying,
-    animations: [],
-  },
-  // {
-  //   name: 'Monkroose.glb',
-  //   type: ModelType.Normal,
-  //   animations: [],
-  // },
-  {
-    name: 'Mushnub.glb',
-    type: ModelType.Normal,
-    animations: [],
-  },
-  {
-    name: 'Mushnub Evolved.glb',
-    type: ModelType.Normal,
-    animations: [],
-  },
-  // {
-  //   name: 'Mushroom King.glb',
-  //   type: ModelType.Normal,
-  //   animations: [],
-  // },
-  {
-    name: 'Ninja.glb',
-    type: ModelType.Normal,
-    animations: [],
-  },
-  // {
-  //   name: 'Ninja-xGYmeDpfTu.glb',
-  //   type: ModelType.Normal,
-  //   animations: [],
-  // },
-  // {
-  //   name: 'Orc.glb',
-  //   type: ModelType.Normal,
-  //   animations: [],
-  // },
-  {
-    name: 'Orc Enemy.glb',
-    type: ModelType.Normal,
-    animations: [],
-  },
-  {
-    name: 'Pigeon.glb',
-    type: ModelType.Normal,
-    animations: [],
-  },
-  {
-    name: 'Pink Blob.glb',
-    type: ModelType.Normal,
-    animations: [],
-  },
-  {
-    name: 'Squidle.glb',
-    type: ModelType.Flying,
-    animations: [],
-  },
-  {
-    name: 'Tribal.glb',
-    type: ModelType.Flying,
-    animations: [],
-  },
-  {
-    name: 'Wizard.glb',
-    type: ModelType.Normal,
-    animations: [],
-  },
-  {
-    name: 'Yeti.glb',
-    type: ModelType.Normal,
-    animations: [],
-  },
-  // {
-  //   name: 'Yeti-ceRHrn8HHE.glb',
-  //   type: ModelType.Normal,
-  //   animations: [],
-  // },
 ]
 
 /**
@@ -252,8 +289,8 @@ export function getAvailableModels (): string[] {
 /**
  * Get animations for a specific model
  */
-export function getAnimationsForModel (modelName: string): string[] {
-  return MODELS.find((model) => model.name === modelName)?.animations || []
+export function getAnimationsForModel (name: string, type: string): string[] {
+  return MODELS.find((model) => model.name === name && model.type === type)?.animations || []
 }
 
 /**

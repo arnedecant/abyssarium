@@ -1,9 +1,11 @@
 import { getBiome } from '../data/biomes'
-import { getAvailableModels, getAnimationsForModel, getModelsByType, ModelType } from '../data/models'
+import { getAvailableModels, getModelsByType, MODELS } from '../data/models'
 import Terminal from './Terminal'
 import type { GestureEvent, AudioMood } from '../types'
 import Scene from './Scene'
 import UserMedia from './UserMedia'
+import { appConfig } from '../data/config'
+import type { ModelType } from '../types'
 
 /**
  * Main entry point for Abyssarium
@@ -30,6 +32,10 @@ export default class Abyssarium {
     this.modelSelect = document.getElementById('model-select') as HTMLSelectElement
     this.animationSelect = document.getElementById('animation-select') as HTMLSelectElement
 
+    if (appConfig.debug) {
+      this.container.classList.add('debug')
+    }
+
     this.init()
   }
 
@@ -55,7 +61,7 @@ export default class Abyssarium {
     const models = getModelsByType(selectedType)
     const initialModel = models[0] || getAvailableModels()[0] || 'Fish.glb'
     this.modelSelect.value = initialModel
-    await this.loadModel(initialModel)
+    await this.loadModel(initialModel, selectedType)
 
     const needsMedia = true // TODO: in kiosk this will already be enabled
     
@@ -102,7 +108,7 @@ export default class Abyssarium {
     } else if (models.length > 0) {
       this.modelSelect.value = models[0]
       // Auto-load the first model when type changes
-      this.loadModel(models[0])
+      this.loadModel(models[0], type)
     }
   }
 
@@ -113,7 +119,8 @@ export default class Abyssarium {
 
     this.modelSelect.addEventListener('change', async () => {
       const selectedModel = this.modelSelect.value
-      await this.loadModel(selectedModel)
+      const selectedType = this.typeSelect.value as ModelType
+      await this.loadModel(selectedModel, selectedType)
     })
   }
 
@@ -128,13 +135,16 @@ export default class Abyssarium {
     })
   }
 
-  private async loadModel (modelName: string): Promise<void> {
+  private async loadModel (modelName: string, modelType: ModelType): Promise<void> {
     this.updateStatus(`Loading model: ${modelName}...`)
-    const modelPath = `/models/${modelName}`
+    const model = MODELS.find((model) => model.name === modelName && model.type === modelType)
+    const modelPath = `/models/${model?.model}`
 
     try {
+      if (!model) throw new Error(`Model not found: ${modelType}/${modelName}`)
+      
       // Get configured animations for this model
-      const configuredAnimations = getAnimationsForModel(modelName)
+      const configuredAnimations = model?.animations
 
       // Replace the current creature
       this.currentCreature = await this.scene!.replaceCreature(modelPath, configuredAnimations)
@@ -149,7 +159,7 @@ export default class Abyssarium {
           option.value = animName
           option.textContent = animName
           // Select if it's in the configured animations
-          if (configuredAnimations.includes(animName)) {
+          if (model.animations.includes(animName)) {
             option.selected = true
           }
           this.animationSelect.appendChild(option)
@@ -164,7 +174,7 @@ export default class Abyssarium {
       }
     } catch (error) {
       Terminal.error('Error loading model:', error)
-      this.updateStatus(`Error loading model: ${modelName}`)
+      this.updateStatus(`Error loading model: ${modelType}/${modelName}`)
     }
   }
 
