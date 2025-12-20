@@ -1,11 +1,13 @@
 import { getBiome } from '../data/biomes'
-import { getAvailableModels, getModelsByType, MODELS } from '../data/models'
+import { getAvailableModels, getModelsByType, getModelById, MODELS } from '../data/models'
 import Terminal from './Terminal'
 import type { GestureEvent, AudioMood } from '../types'
 import Scene from './Scene'
 import UserMedia from './UserMedia'
 import { appConfig } from '../data/config'
 import type { ModelType } from '../types'
+
+const DEFAULT_STATUS = 'Camera & microphone enabled. Interact with the creature!'
 
 /**
  * Main entry point for Abyssarium
@@ -56,12 +58,7 @@ export default class Abyssarium {
     // Setup animation dropdown
     this.setupAnimationDropdown()
 
-    // Load initial model based on selected type
-    const selectedType = this.typeSelect.value as ModelType
-    const models = getModelsByType(selectedType)
-    const initialModel = models[0] || getAvailableModels()[0] || 'Fish.glb'
-    this.modelSelect.value = initialModel
-    await this.loadModel(initialModel, selectedType)
+    this.loadInitialModel()
 
     const needsMedia = true // TODO: in kiosk this will already be enabled
     
@@ -90,7 +87,7 @@ export default class Abyssarium {
     })
   }
 
-  private updateModelDropdown (type: ModelType): void {
+  private updateModelDropdown (type: ModelType, skipAutoLoad: boolean = false): void {
     const models = getModelsByType(type)
     const currentValue = this.modelSelect.value
     this.modelSelect.innerHTML = ''
@@ -107,8 +104,10 @@ export default class Abyssarium {
       this.modelSelect.value = currentValue
     } else if (models.length > 0) {
       this.modelSelect.value = models[0]
-      // Auto-load the first model when type changes
-      this.loadModel(models[0], type)
+      // Auto-load the first model when type changes (unless skipAutoLoad is true)
+      if (!skipAutoLoad) {
+        this.loadModel(models[0], type)
+      }
     }
   }
 
@@ -124,14 +123,35 @@ export default class Abyssarium {
     })
   }
 
+  private async loadInitialModel (): Promise<void> {
+    const urlParams = new URLSearchParams(window.location.search)
+    const modelId = urlParams.get('id') ?? ''
+    const model = getModelById(modelId)
+    if (!model) {
+      await this.loadDefaultModel()
+      return
+    }
+    this.typeSelect.value = model.type
+    this.updateModelDropdown(model.type, true)
+    this.modelSelect.value = model.name
+    await this.loadModel(model.name, model.type)
+  }
+
+  private async loadDefaultModel (): Promise<void> {
+    const selectedType = this.typeSelect.value as ModelType
+    const models = getModelsByType(selectedType)
+    const initialModel = models[0] ?? getAvailableModels()[0] ?? 'Alien'
+    this.modelSelect.value = initialModel
+    await this.loadModel(initialModel, selectedType)
+  }
+
   private setupAnimationDropdown (): void {
     this.animationSelect.addEventListener('change', () => {
-      const selectedAnimations = Array.from(this.animationSelect.selectedOptions).map(
-        (opt) => (opt as HTMLOptionElement).value
-      )
-      if (this.currentCreature) {
-        this.currentCreature.playAnimations(selectedAnimations)
-      }
+      const selectedAnimations = Array.from(this.animationSelect.selectedOptions)
+        .map((opt) => (opt as HTMLOptionElement).value)
+        .filter((value) => value !== '')
+      if (!selectedAnimations.length) return
+      this.currentCreature?.playAnimations(selectedAnimations)
     })
   }
 
@@ -142,14 +162,7 @@ export default class Abyssarium {
 
     try {
       if (!model) throw new Error(`Model not found: ${modelType}/${modelName}`)
-      
-      // Get configured animations for this model
-      const configuredAnimations = model?.animations
-
-      // Replace the current creature
-      this.currentCreature = await this.scene!.replaceCreature(modelPath, configuredAnimations)
-
-      // Update animation dropdown with available animations from the loaded model
+      this.currentCreature = await this.scene!.replaceCreature(modelPath, model.animations)
       const availableAnimations = this.currentCreature.getAvailableAnimationNames()
       this.animationSelect.innerHTML = ''
 
@@ -158,7 +171,6 @@ export default class Abyssarium {
           const option = document.createElement('option')
           option.value = animName
           option.textContent = animName
-          // Select if it's in the configured animations
           if (model.animations.includes(animName)) {
             option.selected = true
           }
@@ -198,26 +210,14 @@ export default class Abyssarium {
         const side = event.side
         if (side) {
           this.scene?.handleWave(side)
-          this.updateStatus(`Wave detected: ${side} side!`)
-          // Clear message after 2 seconds
-          setTimeout(() => {
-            this.updateStatus('Camera & microphone enabled. Interact with the creatures!')
-          }, 2000)
+          this.updateStatus(`Wave detected: ${side} side!`, false)
         }
       } else if (event.type === 'nod_yes') {
         this.scene?.handleNodYes()
-        this.updateStatus('Head nod (yes) detected!')
-        // Clear message after 2 seconds
-        setTimeout(() => {
-          this.updateStatus('Camera & microphone enabled. Interact with the creatures!')
-        }, 2000)
+        this.updateStatus('Head nod (yes) detected!', false)
       } else if (event.type === 'nod_no') {
         this.scene?.handleNodNo()
         this.updateStatus('Head shake (no) detected!')
-        // Clear message after 2 seconds
-        setTimeout(() => {
-          this.updateStatus('Camera & microphone enabled. Interact with the creatures!')
-        }, 2000)
       }
       // Note: presence detection removed - GestureEvent no longer includes 'presence' type
       // Presence can be derived from gesture confidence if needed in the future
@@ -238,7 +238,7 @@ export default class Abyssarium {
     const success = await this.userMedia.requestAccess()
 
     if (success) {
-      this.updateStatus('Camera & microphone enabled. Interact with the creatures!')
+      this.updateStatus(DEFAULT_STATUS)
     } else {
       this.updateStatus('Media access denied. App will work without interaction.')
       this.permissionPrompt.classList.remove('hidden')
@@ -258,9 +258,11 @@ export default class Abyssarium {
     }
   }
 
-  private updateStatus (message: string): void {
+  private updateStatus (message: string, isPersistent: boolean = true): void {
     this.statusElement.textContent = message
     Terminal.log(message)
+    if (message === DEFAULT_STATUS || isPersistent) return
+    setTimeout(() => this.updateStatus(DEFAULT_STATUS), 2000)
   }
 
   dispose (): void {

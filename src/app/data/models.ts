@@ -332,15 +332,15 @@ export function getAvailableModels (): string[] {
 }
 
 /**
- * Get animations for a specific model
- */
-export function getAnimationsForModel (name: string, type: string): string[] {
-  return MODELS.find((model) => model.name === name && model.type === type)?.animations || []
-}
-
-/**
  * Get all models based on type
  */
 export function getModelsByType (type: ModelType): string[] {
   return MODELS.filter((model) => model.type === type).map((model) => model.name)
+}
+
+/**
+ * Get a model by its ID
+ */
+export function getModelById (id: string): ModelConfig | undefined {
+  return MODELS.find((model) => model.id === id)
 }

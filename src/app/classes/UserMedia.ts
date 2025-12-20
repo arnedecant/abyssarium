@@ -5,8 +5,8 @@ import { PoseDetector } from './PoseDetector'
 import Terminal from './Terminal'
 
 /**
- * Handles camera and microphone input via getUserMedia
- * Performs motion detection and audio analysis
+ * Handles camera and microphone input via getUserMedia.
+ * Performs motion detection and audio analysis.
  */
 export default class UserMedia {
   private videoElement: HTMLVideoElement | null = null
@@ -23,7 +23,7 @@ export default class UserMedia {
   private isProcessing = false
 
   /**
-   * Request camera and microphone access
+   * Request camera and microphone access.
    */
   async requestAccess (): Promise<boolean> {
     try {
