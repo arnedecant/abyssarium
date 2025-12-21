@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abyssarium</title>
+  <script type="module" crossorigin src="/abyssarium/assets/index-DzMRCmYx.js"></script>
+  <link rel="stylesheet" crossorigin href="/abyssarium/assets/index-CRDIQdPq.css">
+</head>
+<body>
+  <div id="app">
+    <div id="status">Initializing...</div>
+    <div id="controls" class="debug-hidden">
+      <label for="type-select">Type:</label>
+      <select id="type-select">
+        <option value="head">Head</option>
+        <option value="flying">Flying</option>
+        <option value="normal">Normal</option>
+      </select>
+      <label for="model-select">Model:</label>
+      <select id="model-select"></select>
+      <label for="animation-select">Animation (Ctrl+Click to select multiple):</label>
+      <select id="animation-select" multiple></select>
+      <small>Animations auto-detected from model. Configure in models.ts</small>
+    </div>
+    <div id="permission-prompt" class="hidden">
+      <h2>Abyssarium</h2>
+      <p>This experience works best with camera and microphone access.</p>
+      <button id="enable-media">Enable Camera & Microphone</button>
+    </div>
+    <video id="camera-feed" class="camera-feed debug-hidden" autoplay playsinline muted></video>
+  </div>
+</body>
+</html>
+
