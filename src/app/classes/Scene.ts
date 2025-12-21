@@ -139,7 +139,6 @@ export default class Scene {
   async addCreature (modelPath: string, animationNames?: string[]): Promise<Creature> {
     const creature = new Creature(this.scene, this.clock)
     creature.setScale(this.biome.creatureScale)
-    creature.setBaseSpeed(this.biome.creatureSpeed)
     await creature.loadModel(modelPath)
     if (animationNames && animationNames.length > 0) {
       creature.playAnimations(animationNames)
@@ -193,7 +192,7 @@ export default class Scene {
   /**
    * Handle wave gesture
    */
-  handleWave (side: 'left' | 'right'): void {
+  handleWave (_side: 'left' | 'right'): void {
     this.lastWaveTime = this.clock.getElapsedTime()
   }
 
@@ -266,7 +265,6 @@ export default class Scene {
     // Update creatures
     this.creatures.forEach((creature) => {
       creature.setScale(biome.creatureScale)
-      creature.setBaseSpeed(biome.creatureSpeed)
     })
   }
 

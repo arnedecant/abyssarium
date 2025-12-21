@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import type { CreatureState, AudioMood } from '../types'
-import { lerp, randomRange } from '../utils/helpers'
+import { lerp } from '../utils/helpers'
 import Terminal from './Terminal'
 
 /**
@@ -14,11 +14,8 @@ export default class Creature {
   private mixer: THREE.AnimationMixer | null = null
   private clock: THREE.Clock
   private state: CreatureState = 'idle'
-  private stateStartTime = 0
   private targetPosition = new THREE.Vector3()
   private currentPosition = new THREE.Vector3()
-  private baseSpeed = 1.0
-  private currentSpeed = 1.0
   private scale = 1.0
   private audioMood: AudioMood = {
     loudness: 0,
@@ -26,8 +23,6 @@ export default class Creature {
     midBand: 0,
     highBand: 0,
   }
-  private presenceLevel = 0
-  private lastWaveTime = 0
   private availableAnimations: THREE.AnimationClip[] = []
   private currentAnimationActions: THREE.AnimationAction[] = []
   
@@ -39,7 +34,7 @@ export default class Creature {
   constructor(scene: THREE.Scene, clock: THREE.Clock) {
     this.scene = scene
     this.clock = clock
-    this.stateStartTime = this.clock.getElapsedTime()
+    Terminal.log('clock', this.clock)
   }
 
   /**
@@ -127,16 +122,11 @@ export default class Creature {
    */
   update (deltaTime: number, audioMood: AudioMood, presenceLevel: number, hasRecentWave: boolean): void {
     this.audioMood = audioMood
-    this.presenceLevel = presenceLevel
 
     // Update animation mixer
     if (this.mixer) {
       this.mixer.update(deltaTime)
     }
-
-    // State machine transitions
-    const currentTime = this.clock.getElapsedTime()
-    const timeInState = currentTime - this.stateStartTime
 
     // Determine new state based on inputs
     let newState: CreatureState = this.state
@@ -165,26 +155,25 @@ export default class Creature {
 
   private transitionToState (newState: CreatureState): void {
     this.state = newState
-    this.stateStartTime = this.clock.getElapsedTime()
 
     // Adjust speed based on state
-    switch (this.state) {
-      case 'idle':
-        this.currentSpeed = this.baseSpeed * 0.3
-        break
-      case 'curious':
-        this.currentSpeed = this.baseSpeed * 0.6
-        break
-      case 'playful':
-        this.currentSpeed = this.baseSpeed * 1.2
-        break
-      case 'startled':
-        this.currentSpeed = this.baseSpeed * 2.0
-        break
-    }
+    // switch (this.state) {
+    //   case 'idle':
+    //     this.currentSpeed = this.baseSpeed * 0.3
+    //     break
+    //   case 'curious':
+    //     this.currentSpeed = this.baseSpeed * 0.6
+    //     break
+    //   case 'playful':
+    //     this.currentSpeed = this.baseSpeed * 1.2
+    //     break
+    //   case 'startled':
+    //     this.currentSpeed = this.baseSpeed * 2.0
+    //     break
+    // }
   }
 
-  private updateBehavior (deltaTime: number): void {
+  private updateBehavior (_deltaTime: number): void {
     if (!this.model) return
 
     // Character stays still for hologram display
@@ -213,17 +202,6 @@ export default class Creature {
       // Animation complete, return to idle
       this.returnToIdle()
     }
-  }
-
-  /**
-   * Find an animation by searching for keywords in its name (case-insensitive)
-   */
-  private findAnimationByKeywords (keywords: string[]): THREE.AnimationClip | null {
-    const lowerKeywords = keywords.map(k => k.toLowerCase())
-    return this.availableAnimations.find((clip) => {
-      const clipName = clip.name.toLowerCase()
-      return lowerKeywords.some(keyword => clipName.includes(keyword))
-    }) || null
   }
 
   /**
@@ -305,14 +283,6 @@ export default class Creature {
     }
   }
 
-  private setNewTarget (): void {
-    this.targetPosition.set(
-      randomRange(-8, 8),
-      randomRange(-3, 3),
-      randomRange(-8, 8)
-    )
-  }
-
   private updatePosition (_deltaTime: number): void {
     if (!this.model) return
 
@@ -325,10 +295,6 @@ export default class Creature {
     if (this.model) {
       this.model.scale.set(scale, scale, scale)
     }
-  }
-
-  setBaseSpeed (speed: number): void {
-    this.baseSpeed = speed
   }
 
   getState (): CreatureState {
