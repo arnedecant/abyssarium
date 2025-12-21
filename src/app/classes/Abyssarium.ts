@@ -24,6 +24,7 @@ export default class Abyssarium {
   private animationSelect: HTMLSelectElement
   private currentBiome = 'abyssarium'
   private currentCreature: any = null
+  private isUpdatingAnimationDropdown = false
 
   constructor () {
     this.container = document.getElementById('app')!
@@ -33,6 +34,9 @@ export default class Abyssarium {
     this.typeSelect = document.getElementById('type-select') as HTMLSelectElement
     this.modelSelect = document.getElementById('model-select') as HTMLSelectElement
     this.animationSelect = document.getElementById('animation-select') as HTMLSelectElement
+
+    // Ensure permission prompt is hidden initially
+    this.permissionPrompt.classList.add('hidden')
 
     if (appConfig.debug) {
       this.container.classList.add('debug')
@@ -44,6 +48,9 @@ export default class Abyssarium {
   private async init (): Promise<void> {
     // Load configuration first
     this.updateStatus('Initializing scene...')
+
+    // Ensure permission prompt is hidden initially
+    this.permissionPrompt.classList.add('hidden')
 
     // Initialize scene with default biome
     const biome = getBiome(this.currentBiome)
@@ -63,10 +70,20 @@ export default class Abyssarium {
     const needsMedia = true // TODO: in kiosk this will already be enabled
     
     if (needsMedia) {
-      this.updateStatus('Scene ready. Click to enable camera & microphone.')
-      // Show permission prompt
-      this.permissionPrompt.classList.remove('hidden')
-      this.enableButton.addEventListener('click', () => this.enableMedia())
+      // Check actual browser permissions
+      const hasPermissions = await UserMedia.checkPermissions()
+      
+      if (hasPermissions) {
+        // Permissions already granted (kiosk mode or previously granted)
+        // Automatically enable media without showing prompt
+        this.updateStatus('Scene ready. Enabling camera & microphone...')
+        await this.enableMedia()
+      } else {
+        // Permissions not granted - show prompt
+        this.updateStatus('Scene ready. Click to enable camera & microphone.')
+        this.permissionPrompt.classList.remove('hidden')
+        this.enableButton.addEventListener('click', () => this.enableMedia())
+      }
     } else {
       this.updateStatus('Scene ready.')
       // Hide permission prompt if media is disabled
@@ -113,8 +130,9 @@ export default class Abyssarium {
 
   private setupModelDropdown (): void {
     // Initialize with models for the default selected type
+    // Skip auto-load during initial setup - loadInitialModel will handle loading
     const selectedType = this.typeSelect.value as ModelType
-    this.updateModelDropdown(selectedType)
+    this.updateModelDropdown(selectedType, true)
 
     this.modelSelect.addEventListener('change', async () => {
       const selectedModel = this.modelSelect.value
@@ -147,6 +165,9 @@ export default class Abyssarium {
 
   private setupAnimationDropdown (): void {
     this.animationSelect.addEventListener('change', () => {
+      // Don't trigger animations when programmatically updating the dropdown
+      if (this.isUpdatingAnimationDropdown) return
+      
       const selectedAnimations = Array.from(this.animationSelect.selectedOptions)
         .map((opt) => (opt as HTMLOptionElement).value)
         .filter((value) => value !== '')
@@ -164,6 +185,9 @@ export default class Abyssarium {
       if (!model) throw new Error(`Model not found: ${modelType}/${modelName}`)
       this.currentCreature = await this.scene!.replaceCreature(modelPath, model.animations)
       const availableAnimations = this.currentCreature.getAvailableAnimationNames()
+      
+      // Prevent change event from firing during programmatic update
+      this.isUpdatingAnimationDropdown = true
       this.animationSelect.innerHTML = ''
 
       if (availableAnimations.length > 0) {
@@ -184,6 +208,9 @@ export default class Abyssarium {
         this.animationSelect.appendChild(option)
         this.updateStatus('Model loaded. No animations found.')
       }
+      
+      // Re-enable change event handling
+      this.isUpdatingAnimationDropdown = false
     } catch (error) {
       Terminal.error('Error loading model:', error)
       this.updateStatus(`Error loading model: ${modelType}/${modelName}`)
@@ -238,6 +265,8 @@ export default class Abyssarium {
     const success = await this.userMedia.requestAccess()
 
     if (success) {
+      // Ensure prompt is hidden on success
+      this.permissionPrompt.classList.add('hidden')
       this.updateStatus(DEFAULT_STATUS)
     } else {
       this.updateStatus('Media access denied. App will work without interaction.')

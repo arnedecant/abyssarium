@@ -23,6 +23,34 @@ export default class UserMedia {
   private isProcessing = false
 
   /**
+   * Check if camera and microphone permissions are granted
+   * Uses the Permissions API to query actual browser permission state
+   */
+  static async checkPermissions (): Promise<boolean> {
+    // Check if Permissions API is available
+    if (!navigator.permissions || !navigator.permissions.query) {
+      // Fallback: Permissions API not available, assume we need to ask
+      return false
+    }
+
+    try {
+      // Query both camera and microphone permissions
+      const [cameraPermission, microphonePermission] = await Promise.all([
+        navigator.permissions.query({ name: 'camera' as PermissionName }),
+        navigator.permissions.query({ name: 'microphone' as PermissionName })
+      ])
+
+      // Both must be granted for auto-enable
+      return cameraPermission.state === 'granted' && microphonePermission.state === 'granted'
+    } catch (error) {
+      // If query fails (e.g., browser doesn't support these permission names),
+      // fall back to showing the prompt
+      Terminal.log('Could not query permissions, will show prompt:', error)
+      return false
+    }
+  }
+
+  /**
    * Request camera and microphone access.
    */
   async requestAccess (): Promise<boolean> {
